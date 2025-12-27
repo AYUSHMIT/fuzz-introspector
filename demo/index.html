@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<!--
+Copyright 2024 Fuzz Introspector Authors
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Interactive demo of Fuzz Introspector - Understand and improve your fuzzing">
+    <title>Fuzz Introspector - Interactive Demo</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <!-- Prism.js for syntax highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+    
+    <!-- AOS (Animate On Scroll) -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --secondary-color: #06b6d4;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .glass-morphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+        
+        .code-block {
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        /* Dark mode */
+        .dark {
+            background-color: #1a1a1a;
+            color: #ffffff;
+        }
+        
+        .dark .bg-white {
+            background-color: #2d2d2d;
+        }
+        
+        .dark .text-gray-900 {
+            color: #ffffff;
+        }
+        
+        .dark .text-gray-600 {
+            color: #a0a0a0;
+        }
+        
+        .dark .border-gray-200 {
+            border-color: #404040;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 5px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased">
+    <!-- Navigation -->
+    <nav class="fixed w-full top-0 z-50 bg-white dark:bg-gray-900 shadow-md">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="text-2xl font-bold text-indigo-600">
+                        🔍 Fuzz Introspector
+                    </div>
+                </div>
+                <div class="hidden md:flex space-x-6">
+                    <a href="#features" class="text-gray-700 hover:text-indigo-600 transition">Features</a>
+                    <a href="#demo" class="text-gray-700 hover:text-indigo-600 transition">Demo</a>
+                    <a href="#tutorial" class="text-gray-700 hover:text-indigo-600 transition">Tutorial</a>
+                    <a href="https://github.com/ossf/fuzz-introspector" class="text-gray-700 hover:text-indigo-600 transition">GitHub</a>
+                </div>
+                <button id="theme-toggle" class="p-2 rounded-lg bg-gray-200 dark:bg-gray-700">
+                    <span class="dark:hidden">🌙</span>
+                    <span class="hidden dark:inline">☀️</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="pt-32 pb-20 gradient-bg text-white" data-aos="fade-up">
+        <div class="container mx-auto px-6 text-center">
+            <h1 class="text-5xl md:text-6xl font-bold mb-6" data-aos="fade-down">
+                Understand & Improve Your Fuzzing
+            </h1>
+            <p class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto" data-aos="fade-up" data-aos-delay="200">
+                Fuzz Introspector helps you identify coverage gaps, analyze complexity, 
+                and optimize your fuzzing harnesses for maximum bug-finding potential.
+            </p>
+            <div class="flex flex-col md:flex-row gap-4 justify-center" data-aos="fade-up" data-aos-delay="400">
+                <a href="#demo" class="px-8 py-4 bg-white text-indigo-600 rounded-lg font-semibold hover:bg-gray-100 transition">
+                    Try Interactive Demo
+                </a>
+                <a href="tutorial/01-setup.html" class="px-8 py-4 bg-transparent border-2 border-white rounded-lg font-semibold hover:bg-white hover:text-indigo-600 transition">
+                    Start Tutorial
+                </a>
+            </div>
+            
+            <!-- Stats -->
+            <div class="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto" data-aos="fade-up" data-aos-delay="600">
+                <div class="glass-morphism p-6 rounded-lg">
+                    <div class="text-4xl font-bold">1000+</div>
+                    <div class="text-sm mt-2">OSS Projects</div>
+                </div>
+                <div class="glass-morphism p-6 rounded-lg">
+                    <div class="text-4xl font-bold">5+</div>
+                    <div class="text-sm mt-2">Languages</div>
+                </div>
+                <div class="glass-morphism p-6 rounded-lg">
+                    <div class="text-4xl font-bold">100+</div>
+                    <div class="text-sm mt-2">Bugs Found</div>
+                </div>
+                <div class="glass-morphism p-6 rounded-lg">
+                    <div class="text-4xl font-bold">40%+</div>
+                    <div class="text-sm mt-2">Avg Coverage Gain</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- What is Fuzz Introspector -->
+    <section class="py-20 bg-gray-50 dark:bg-gray-800" id="about">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h2 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+                    What is Fuzz Introspector?
+                </h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+                    A powerful tool that analyzes your fuzzing harnesses to provide actionable insights 
+                    for improving code coverage and finding more bugs.
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-white dark:bg-gray-900 p-8 rounded-lg shadow-lg card-hover" data-aos="fade-up" data-aos-delay="100">
+                    <div class="text-4xl mb-4">📊</div>
+                    <h3 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Coverage Analysis</h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Visualize exactly which code paths are tested and identify critical gaps in your fuzzing coverage.
+                    </p>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-900 p-8 rounded-lg shadow-lg card-hover" data-aos="fade-up" data-aos-delay="200">
+                    <div class="text-4xl mb-4">🎯</div>
+                    <h3 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Complexity Metrics</h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Identify complex, high-risk code that needs more testing. Bugs hide in complexity!
+                    </p>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-900 p-8 rounded-lg shadow-lg card-hover" data-aos="fade-up" data-aos-delay="300">
+                    <div class="text-4xl mb-4">🔗</div>
+                    <h3 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Reachability Graphs</h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        See which functions are reachable from your fuzzers and discover hidden code paths.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-20" id="features">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h2 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+                    Powerful Features
+                </h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">
+                    Everything you need to supercharge your fuzzing
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-12 max-w-6xl mx-auto">
+                <!-- Feature 1 -->
+                <div class="flex gap-4" data-aos="fade-right">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900 rounded-lg flex items-center justify-center text-2xl">
+                            📈
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold mb-2 text-gray-900 dark:text-white">Interactive Reports</h3>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Beautiful HTML reports with interactive charts, call trees, and detailed function analysis.
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Feature 2 -->
+                <div class="flex gap-4" data-aos="fade-left">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-cyan-100 dark:bg-cyan-900 rounded-lg flex items-center justify-center text-2xl">
+                            🌍
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold mb-2 text-gray-900 dark:text-white">Multi-Language Support</h3>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Supports C, C++, Python, Java, Rust, and more. Works with your existing tools.
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Feature 3 -->
+                <div class="flex gap-4" data-aos="fade-right">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center text-2xl">
+                            🔄
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold mb-2 text-gray-900 dark:text-white">OSS-Fuzz Integration</h3>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Seamlessly integrates with OSS-Fuzz for continuous fuzzing of open source projects.
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Feature 4 -->
+                <div class="flex gap-4" data-aos="fade-left">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center text-2xl">
+                            🤖
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold mb-2 text-gray-900 dark:text-white">AI-Powered Suggestions</h3>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Get intelligent recommendations for optimal fuzzing targets and strategies.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive Demo Section -->
+    <section class="py-20 bg-gray-50 dark:bg-gray-800" id="demo">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h2 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+                    Live Demo: Before & After
+                </h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">
+                    See how Fuzz Introspector transforms fuzzing effectiveness
+                </p>
+            </div>
+            
+            <!-- Comparison -->
+            <div class="grid md:grid-cols-2 gap-8 mb-12">
+                <!-- Before -->
+                <div class="bg-white dark:bg-gray-900 rounded-lg shadow-xl overflow-hidden" data-aos="fade-right">
+                    <div class="bg-red-500 text-white px-6 py-4">
+                        <h3 class="text-2xl font-bold">❌ Initial Fuzzer</h3>
+                        <p class="text-sm opacity-90">Poor coverage, missing bugs</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="mb-6">
+                            <h4 class="font-semibold mb-2 text-gray-900 dark:text-white">Coverage: 47.3%</h4>
+                            <div class="w-full bg-gray-200 rounded-full h-4">
+                                <div class="bg-red-500 h-4 rounded-full" style="width: 47.3%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-3 text-sm">
+                            <div class="flex justify-between text-gray-600 dark:text-gray-300">
+                                <span>Functions Reached:</span>
+                                <span class="font-semibold">8 / 15 (53%)</span>
+                            </div>
+                            <div class="flex justify-between text-gray-600 dark:text-gray-300">
+                                <span>Complexity Covered:</span>
+                                <span class="font-semibold">23 / 45 (51%)</span>
+                            </div>
+                            <div class="flex justify-between text-gray-600 dark:text-gray-300">
+                                <span>Bugs Found:</span>
+                                <span class="font-semibold text-red-500">0</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6">
+                            <canvas id="beforeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- After -->
+                <div class="bg-white dark:bg-gray-900 rounded-lg shadow-xl overflow-hidden" data-aos="fade-left">
+                    <div class="bg-green-500 text-white px-6 py-4">
+                        <h3 class="text-2xl font-bold">✅ Improved Fuzzer</h3>
+                        <p class="text-sm opacity-90">Excellent coverage, vulnerability found!</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="mb-6">
+                            <h4 class="font-semibold mb-2 text-gray-900 dark:text-white">Coverage: 91.2%</h4>
+                            <div class="w-full bg-gray-200 rounded-full h-4">
+                                <div class="bg-green-500 h-4 rounded-full" style="width: 91.2%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-3 text-sm">
+                            <div class="flex justify-between text-gray-600 dark:text-gray-300">
+                                <span>Functions Reached:</span>
+                                <span class="font-semibold">14 / 15 (93%)</span>
+                            </div>
+                            <div class="flex justify-between text-gray-600 dark:text-gray-300">
+                                <span>Complexity Covered:</span>
+                                <span class="font-semibold">42 / 45 (93%)</span>
+                            </div>
+                            <div class="flex justify-between text-gray-600 dark:text-gray-300">
+                                <span>Bugs Found:</span>
+                                <span class="font-semibold text-green-500">1 (Buffer Overflow!)</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6">
+                            <canvas id="afterChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Code Comparison -->
+            <div class="bg-white dark:bg-gray-900 rounded-lg shadow-xl p-8" data-aos="fade-up">
+                <h3 class="text-2xl font-bold mb-6 text-gray-900 dark:text-white">The Fix: One Simple Change</h3>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="font-semibold mb-3 text-red-600">❌ Before</h4>
+                        <div class="code-block">
+                            <pre><code class="language-c">// Testing functions separately
+int LLVMFuzzerTestOneInput(
+    const uint8_t *data, size_t size) {
+    
+    validate_input(data, size);
+    parse_header(data, size);
+    process_complex_data(data, size);
+    
+    // Missing coordination!
+    // Missing deep paths!
+    
+    return 0;
+}</code></pre>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold mb-3 text-green-600">✅ After</h4>
+                        <div class="code-block">
+                            <pre><code class="language-c">// Using main entry point
+int LLVMFuzzerTestOneInput(
+    const uint8_t *data, size_t size) {
+    
+    // Single coordinated call
+    process_data(data, size);
+    
+    // ✅ Natural interactions
+    // ✅ All paths reachable
+    // ✅ Found vulnerability!
+    
+    return 0;
+}</code></pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-8 p-4 bg-blue-50 dark:bg-blue-900 rounded-lg">
+                    <p class="text-sm text-blue-900 dark:text-blue-100">
+                        <strong>💡 Key Insight:</strong> Fuzz Introspector identified that <code>process_data()</code> 
+                        was the optimal entry point, coordinating all other functions naturally. This simple change 
+                        increased coverage by 44% and uncovered a critical buffer overflow!
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="py-20" id="how-it-works">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h2 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+                    How It Works
+                </h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">
+                    Simple 4-step process to better fuzzing
+                </p>
+            </div>
+            
+            <div class="max-w-4xl mx-auto">
+                <div class="relative">
+                    <!-- Step 1 -->
+                    <div class="flex gap-6 mb-12" data-aos="fade-right">
+                        <div class="flex-shrink-0">
+                            <div class="w-16 h-16 bg-indigo-600 text-white rounded-full flex items-center justify-center text-2xl font-bold">
+                                1
+                            </div>
+                        </div>
+                        <div class="flex-1 pt-2">
+                            <h3 class="text-2xl font-bold mb-2 text-gray-900 dark:text-white">Instrument Your Code</h3>
+                            <p class="text-gray-600 dark:text-gray-300">
+                                Compile your project with special flags to collect coverage and complexity data.
+                            </p>
+                            <pre class="mt-3 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg text-sm"><code>clang -fsanitize=fuzzer,address -g sample.c fuzzer.c</code></pre>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 2 -->
+                    <div class="flex gap-6 mb-12" data-aos="fade-left">
+                        <div class="flex-shrink-0">
+                            <div class="w-16 h-16 bg-cyan-600 text-white rounded-full flex items-center justify-center text-2xl font-bold">
+                                2
+                            </div>
+                        </div>
+                        <div class="flex-1 pt-2">
+                            <h3 class="text-2xl font-bold mb-2 text-gray-900 dark:text-white">Run Analysis</h3>
+                            <p class="text-gray-600 dark:text-gray-300">
+                                Execute Fuzz Introspector to analyze your fuzzer's behavior and coverage.
+                            </p>
+                            <pre class="mt-3 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg text-sm"><code>fuzz-introspector --target ./fuzzer --output ./reports/</code></pre>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 3 -->
+                    <div class="flex gap-6 mb-12" data-aos="fade-right">
+                        <div class="flex-shrink-0">
+                            <div class="w-16 h-16 bg-green-600 text-white rounded-full flex items-center justify-center text-2xl font-bold">
+                                3
+                            </div>
+                        </div>
+                        <div class="flex-1 pt-2">
+                            <h3 class="text-2xl font-bold mb-2 text-gray-900 dark:text-white">Review Insights</h3>
+                            <p class="text-gray-600 dark:text-gray-300">
+                                Explore interactive HTML reports showing coverage gaps, complexity hotspots, and recommendations.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 4 -->
+                    <div class="flex gap-6" data-aos="fade-left">
+                        <div class="flex-shrink-0">
+                            <div class="w-16 h-16 bg-purple-600 text-white rounded-full flex items-center justify-center text-2xl font-bold">
+                                4
+                            </div>
+                        </div>
+                        <div class="flex-1 pt-2">
+                            <h3 class="text-2xl font-bold mb-2 text-gray-900 dark:text-white">Improve & Iterate</h3>
+                            <p class="text-gray-600 dark:text-gray-300">
+                                Apply insights to enhance your fuzzer, add seed corpus, and measure improvement.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tutorial Section -->
+    <section class="py-20 bg-gray-50 dark:bg-gray-800" id="tutorial">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h2 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+                    Start Learning
+                </h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">
+                    Complete tutorial from setup to advanced optimization
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-4 gap-6 max-w-6xl mx-auto">
+                <a href="tutorial/01-setup.md" class="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg card-hover" data-aos="fade-up" data-aos-delay="100">
+                    <div class="text-4xl mb-4">⚙️</div>
+                    <h3 class="text-xl font-bold mb-2 text-gray-900 dark:text-white">Part 1: Setup</h3>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm">
+                        Install and configure Fuzz Introspector
+                    </p>
+                    <div class="mt-4 text-indigo-600 font-semibold">Start →</div>
+                </a>
+                
+                <a href="tutorial/02-first-analysis.md" class="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg card-hover" data-aos="fade-up" data-aos-delay="200">
+                    <div class="text-4xl mb-4">🚀</div>
+                    <h3 class="text-xl font-bold mb-2 text-gray-900 dark:text-white">Part 2: First Analysis</h3>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm">
+                        Run your first analysis and understand reports
+                    </p>
+                    <div class="mt-4 text-indigo-600 font-semibold">Continue →</div>
+                </a>
+                
+                <a href="tutorial/03-interpreting-results.md" class="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg card-hover" data-aos="fade-up" data-aos-delay="300">
+                    <div class="text-4xl mb-4">📊</div>
+                    <h3 class="text-xl font-bold mb-2 text-gray-900 dark:text-white">Part 3: Interpret Results</h3>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm">
+                        Deep dive into metrics and call graphs
+                    </p>
+                    <div class="mt-4 text-indigo-600 font-semibold">Learn →</div>
+                </a>
+                
+                <a href="tutorial/04-improving-fuzzer.md" class="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg card-hover" data-aos="fade-up" data-aos-delay="400">
+                    <div class="text-4xl mb-4">🎯</div>
+                    <h3 class="text-xl font-bold mb-2 text-gray-900 dark:text-white">Part 4: Improve</h3>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm">
+                        Apply insights and optimize your fuzzer
+                    </p>
+                    <div class="mt-4 text-indigo-600 font-semibold">Master →</div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sample Project -->
+    <section class="py-20">
+        <div class="container mx-auto px-6">
+            <div class="max-w-4xl mx-auto bg-white dark:bg-gray-900 rounded-lg shadow-xl p-8" data-aos="fade-up">
+                <h2 class="text-3xl font-bold mb-6 text-gray-900 dark:text-white">
+                    📦 Try the Sample Project
+                </h2>
+                <p class="text-gray-600 dark:text-gray-300 mb-6">
+                    Get hands-on experience with our ready-to-run sample project that demonstrates 
+                    the power of Fuzz Introspector.
+                </p>
+                
+                <div class="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg mb-6">
+                    <h3 class="font-bold mb-3 text-gray-900 dark:text-white">Quick Start:</h3>
+                    <pre class="text-sm"><code># Clone the repo
+git clone https://github.com/ossf/fuzz-introspector.git
+cd fuzz-introspector/demo/sample-project
+
+# Build and run
+make all
+./fuzzer corpus/
+
+# Analyze
+fuzz-introspector --target ./fuzzer --output ./reports/</code></pre>
+                </div>
+                
+                <div class="flex gap-4">
+                    <a href="sample-project/README.md" class="px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition">
+                        View Documentation
+                    </a>
+                    <a href="https://github.com/ossf/fuzz-introspector/tree/main/demo/sample-project" class="px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+                        Browse Code
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Real World Examples -->
+    <section class="py-20 bg-gray-50 dark:bg-gray-800">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h2 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+                    Real-World Impact
+                </h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">
+                    See Fuzz Introspector in action on OSS-Fuzz projects
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <a href="https://introspector.oss-fuzz.com/project-profile?project=liblouis" class="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg card-hover" data-aos="fade-up">
+                    <h3 class="text-xl font-bold mb-2 text-gray-900 dark:text-white">Liblouis</h3>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm mb-4">C library for Braille translation</p>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Coverage:</span>
+                        <span class="font-semibold text-green-600">72%</span>
+                    </div>
+                </a>
+                
+                <a href="https://introspector.oss-fuzz.com/project-profile?project=htslib" class="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg card-hover" data-aos="fade-up" data-aos-delay="100">
+                    <h3 class="text-xl font-bold mb-2 text-gray-900 dark:text-white">htslib</h3>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm mb-4">C library for genomics data</p>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Coverage:</span>
+                        <span class="font-semibold text-green-600">68%</span>
+                    </div>
+                </a>
+                
+                <a href="https://introspector.oss-fuzz.com/project-profile?project=brotli" class="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg card-hover" data-aos="fade-up" data-aos-delay="200">
+                    <h3 class="text-xl font-bold mb-2 text-gray-900 dark:text-white">Brotli</h3>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm mb-4">C++ compression algorithm</p>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Coverage:</span>
+                        <span class="font-semibold text-green-600">85%</span>
+                    </div>
+                </a>
+            </div>
+            
+            <div class="text-center mt-12">
+                <a href="https://introspector.oss-fuzz.com/projects-overview" class="px-8 py-4 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition inline-block">
+                    Explore All Projects →
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 gradient-bg text-white">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-4xl font-bold mb-6" data-aos="fade-up">
+                Ready to Improve Your Fuzzing?
+            </h2>
+            <p class="text-xl mb-8 max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="200">
+                Join thousands of developers using Fuzz Introspector to find more bugs and secure their code.
+            </p>
+            <div class="flex flex-col md:flex-row gap-4 justify-center" data-aos="fade-up" data-aos-delay="400">
+                <a href="tutorial/01-setup.md" class="px-8 py-4 bg-white text-indigo-600 rounded-lg font-semibold hover:bg-gray-100 transition">
+                    Get Started Now
+                </a>
+                <a href="https://github.com/ossf/fuzz-introspector" class="px-8 py-4 bg-transparent border-2 border-white rounded-lg font-semibold hover:bg-white hover:text-indigo-600 transition">
+                    View on GitHub
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="container mx-auto px-6">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Fuzz Introspector</h3>
+                    <p class="text-gray-400 text-sm">
+                        Helping developers understand and improve their fuzzing harnesses.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Resources</h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="https://fuzz-introspector.readthedocs.io" class="hover:text-white">Documentation</a></li>
+                        <li><a href="tutorial/01-setup.md" class="hover:text-white">Tutorial</a></li>
+                        <li><a href="../doc/CaseStudies.md" class="hover:text-white">Case Studies</a></li>
+                        <li><a href="../doc/Features.md" class="hover:text-white">Features</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Community</h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="https://github.com/ossf/fuzz-introspector" class="hover:text-white">GitHub</a></li>
+                        <li><a href="https://github.com/ossf/fuzz-introspector/discussions" class="hover:text-white">Discussions</a></li>
+                        <li><a href="https://github.com/ossf/fuzz-introspector/issues" class="hover:text-white">Issues</a></li>
+                        <li><a href="../CODE_OF_CONDUCT.md" class="hover:text-white">Code of Conduct</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Legal</h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="../LICENSE" class="hover:text-white">Apache 2.0 License</a></li>
+                        <li><a href="../SECURITY.md" class="hover:text-white">Security Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
+                <p>© 2024 Fuzz Introspector Authors. Licensed under Apache 2.0.</p>
+                <p class="mt-2">Part of the <a href="https://openssf.org/" class="text-indigo-400 hover:text-indigo-300">OpenSSF</a> Security Tooling Working Group</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="assets/js/demo.js"></script>
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 800,
+            once: true,
+            offset: 100
+        });
+        
+        // Dark mode toggle
+        const themeToggle = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+        
+        themeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+        });
+        
+        // Load saved theme
+        if (localStorage.getItem('theme') === 'dark') {
+            html.classList.add('dark');
+        }
+        
+        // Initialize Prism
+        Prism.highlightAll();
+    </script>
+</body>
+</html>
