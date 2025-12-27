@@ -11,6 +11,25 @@ Fuzz-introspector aims to improve fuzzing experience of a project by guiding on 
 - introduce new fuzzers to a fuzz harness
 - modify existing fuzzers to improve the quality of your harness.
 
+## 🎯 Try the Interactive Demo!
+
+**New!** Experience Fuzz Introspector through our comprehensive interactive demo:
+
+- 🌐 **[Interactive Demo Website](demo/index.html)** - Beautiful showcase with live examples
+- 📦 **[Sample Project](demo/sample-project/)** - Hands-on fuzzing analysis project
+- 📚 **[Step-by-Step Tutorial](demo/tutorial/01-setup.md)** - Learn from setup to optimization
+- 📊 **See Real Results**: Watch coverage improve from 47% to 91% with one simple change!
+
+```bash
+# Quick start: Try the sample project
+cd demo/sample-project
+make all
+./fuzzer corpus/        # Before: 47% coverage
+./improved-fuzzer corpus/  # After: 91% coverage!
+```
+
+[**→ Start the Interactive Demo**](demo/index.html) | [**→ Begin Tutorial**](demo/tutorial/01-setup.md)
+
 ## Indexing OSS-Fuzz projects
 
 [Open Source Fuzzing Introspection](https://introspector.oss-fuzz.com) provides introspection capabilities to [OSS-Fuzz](https://github.com/google/oss-fuzz) projects and is powered by Fuzz Introspector. This page gives macro insights into the fuzzing of open source projects.
