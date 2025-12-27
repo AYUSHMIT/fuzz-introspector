@@ -1,0 +1,20 @@
+# Demo build artifacts
+sample-project/fuzzer
+sample-project/improved-fuzzer
+sample-project/corpus/
+sample-project/crash-*
+sample-project/leak-*
+sample-project/oom-*
+sample-project/slow-*
+sample-project/timeout-*
+sample-project/*.profraw
+sample-project/*.profdata
+
+# Generated reports (users will generate their own)
+sample-project/reports/*/fuzz_report.html
+sample-project/reports/*/summary.txt
+
+# Temp files
+*.tmp
+*.log
+.DS_Store
